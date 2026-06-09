@@ -1,0 +1,13 @@
+[package]
+name = "sql-mcp-server"
+version = "0.1.0"
+edition = "2024"
+description = "An MCP server for connecting to and running queries on SQL databases. Supports built-in SSH tunneling"
+
+[dependencies]
+anyhow = "1.0.102"
+clap = { version = "4.6.1", features = ["derive", "env"] }
+tokio = {
+  version = "1.52.3",
+  features = ["io-util", "macros", "net", "rt-multi-thread"]
+}
