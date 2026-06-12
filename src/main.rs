@@ -1,14 +1,19 @@
+use std::io;
+
 use anyhow::{Result, anyhow};
 use clap::Parser;
-use sql_mcp_server::{cli::Cli, tunnel};
-use sqlx::any::AnyPoolOptions;
-use tokio::signal;
+use rmcp::{ServiceExt, transport};
+use sql_mcp_server::{cli::Cli, db::DatabasePool, mcp::SqlMcpServer, tunnel};
 use tracing::{Level, debug, error, info};
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let args = Cli::parse();
+
     tracing_subscriber::fmt()
+        .with_writer(io::stderr)
+        .with_ansi(false)
         .with_env_filter(
             EnvFilter::builder()
                 .with_default_directive(Level::INFO.into())
@@ -16,7 +21,6 @@ async fn main() -> Result<()> {
         )
         .init();
 
-    let args = Cli::parse();
     debug!("Args: {:#?}", args);
 
     let (url, handle) = match args.ssh {
@@ -34,25 +38,21 @@ async fn main() -> Result<()> {
         None => (args.database_url, None),
     };
 
-    sqlx::any::install_default_drivers();
-
-    let pool = AnyPoolOptions::new()
-        .max_connections(5)
-        .connect(&url.to_string())
-        .await?;
-
-    let (res,): (i64,) = sqlx::query_as("Select 67").fetch_one(&pool).await?;
-    info!("Response: {res}");
+    let pool = DatabasePool::connect(url).await?;
+    let server = SqlMcpServer::new(pool, args.operations);
+    let service = server.serve(transport::stdio()).await?;
 
     match handle {
         Some(handle) => tokio::select! {
-            _ = signal::ctrl_c() => (),
+            _ = service.waiting() => (),
             res = handle => match res {
                 Ok(_) => info!("Tunnel closed"),
                 Err(e) => error!("Tunnel panicked: {e}"),
             }
         },
-        None => signal::ctrl_c().await?,
+        None => {
+            service.waiting().await?;
+        }
     }
 
     Ok(())

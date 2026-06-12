@@ -47,7 +47,7 @@ pub struct SshOptions {
 pub struct Cli {
     /// The URL of the database to connect to
     ///
-    /// Supports: MySQL, Sqlite, Postgres, MSSQL
+    /// Supports: MySQL, MariaDB, Sqlite, Postgres
     #[arg(short, long, env = "DATABASE_URL")]
     pub database_url: Url,
 

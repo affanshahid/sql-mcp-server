@@ -7,21 +7,24 @@ description = "An MCP server for connecting to and running queries on SQL databa
 [dependencies]
 anyhow = "1.0.102"
 clap = { version = "4.6.1", features = ["derive", "env"] }
+rmcp = { version = "1.7.0", features = ["transport-io"] }
 russh = "0.61.2"
+schemars = "1.2.1"
+serde = "1.0.228"
+serde_json = "1.0.150"
 sqlx = {
   version = "0.9.0",
-  features = [
-    "any",
-    "mysql",
-    "postgres",
-    "runtime-tokio",
-    "sqlite",
-    "tls-native-tls"
-  ]
+  features = ["mysql", "postgres", "runtime-tokio", "sqlite", "tls-native-tls"]
 }
+sqlx-json = "0.13.2"
 tokio = {
   version = "1.52.3",
-  features = ["io-util", "macros", "net", "rt-multi-thread", "signal"]
+  features = [
+    "io-util",
+    "macros",
+    "net",
+    "rt-multi-thread",
+  ]
 }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
