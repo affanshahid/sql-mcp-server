@@ -36,6 +36,24 @@ impl SqlMcpServer {
         &self,
         Parameters(input): Parameters<Input>,
     ) -> Result<Json<Response>, ErrorData> {
+        let parsed_operations = self
+            .pool
+            .parse_operations(&input.query)
+            .inspect_err(|err| error!(%err, "Error parsing query"))
+            .map_err(|err| ErrorData::new(ErrorCode::PARSE_ERROR, err.to_string(), None))?;
+
+        let is_allowed = parsed_operations
+            .into_iter()
+            .all(|o| self.operations.contains(&o));
+
+        if !is_allowed {
+            return Err(ErrorData::new(
+                ErrorCode::INVALID_PARAMS,
+                "Query contains disallowed operations",
+                None,
+            ));
+        }
+
         let output = self
             .pool
             .query_as_json(&input.query)

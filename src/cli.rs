@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Args, Parser, ValueEnum};
 use url::Url;
 
-#[derive(ValueEnum, Debug, Clone)]
+#[derive(ValueEnum, Debug, Clone, PartialEq, Eq)]
 pub enum Operation {
     Select,
     Insert,

@@ -1,10 +1,17 @@
 use anyhow::{Result, anyhow};
 use serde_json::Value;
+use sqlparser::{
+    ast::Statement,
+    dialect::{Dialect, MySqlDialect, PostgreSqlDialect, SQLiteDialect},
+    parser::Parser,
+};
 use sqlx::{
     AssertSqlSafe, mysql::MySqlPoolOptions, postgres::PgPoolOptions, sqlite::SqlitePoolOptions,
 };
 use sqlx_json::RowExt;
 use url::Url;
+
+use crate::cli::Operation;
 
 pub enum DatabasePool {
     MySql(sqlx::MySqlPool),
@@ -35,6 +42,26 @@ impl DatabasePool {
             )),
             _ => Err(anyhow!("Unsupported database scheme: {}", url.scheme())),
         }
+    }
+
+    pub fn parse_operations(&self, query: &str) -> Result<Vec<Operation>> {
+        let dialect: &dyn Dialect = match self {
+            DatabasePool::MySql(_) => &MySqlDialect {},
+            DatabasePool::Postgres(_) => &PostgreSqlDialect {},
+            DatabasePool::Sqlite(_) => &SQLiteDialect {},
+        };
+
+        let ast = Parser::parse_sql(dialect, query)?;
+
+        Ok(ast
+            .into_iter()
+            .map(|stmt| match stmt {
+                Statement::Query(_) => Operation::Select,
+                Statement::Insert(_) => Operation::Insert,
+                Statement::Update(_) => Operation::Update,
+                _ => Operation::Ddl,
+            })
+            .collect())
     }
 
     pub async fn query_as_json(&self, query: &str) -> Result<Vec<Value>> {
