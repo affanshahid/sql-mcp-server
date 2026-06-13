@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "An MCP server for connecting to and running queries on SQL databases. Supports built-in SSH tunneling"
 repository = "https://github.com/affanshahid/sql-mcp-server"
+license-file = "LICENSE"
 
 [dependencies]
 anyhow = "1.0.102"
