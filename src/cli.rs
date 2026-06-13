@@ -42,15 +42,8 @@ pub struct SshOptions {
     pub private_key: Option<PathBuf>,
 }
 
-#[derive(Debug, Parser)]
-#[command(about, version, long_about = None)]
-pub struct Cli {
-    /// The URL of the database to connect to
-    ///
-    /// Supports: MySQL, MariaDB, Sqlite, Postgres
-    #[arg(short, long, env = "DATABASE_URL")]
-    pub database_url: Url,
-
+#[derive(Debug, Args)]
+pub struct Permissions {
     /// Operations to allow access to
     #[arg(
         short,
@@ -61,6 +54,32 @@ pub struct Cli {
         env="DATABASE_OPERATIONS"
     )]
     pub operations: Vec<Operation>,
+
+    /// Deny SELECT queries without a LIMIT clause
+    #[arg(long, default_value_t = false, env = "DENY_LIMITLESS_SELECT")]
+    pub deny_limitless_select: bool,
+
+    /// Deny UPDATE queries without a WHERE clause
+    #[arg(long, default_value_t = false, env = "DENY_BOUNDLESS_UPDATE")]
+    pub deny_boundless_update: bool,
+
+    /// Deny DELETE queries without a WHERE clause
+    #[arg(long, default_value_t = false, env = "DENY_BOUNDLESS_DELETE")]
+    pub deny_boundless_delete: bool,
+}
+
+#[derive(Debug, Parser)]
+#[command(about, version, long_about = None)]
+pub struct Cli {
+    /// The URL of the database to connect to
+    ///
+    /// Supports: MySQL, MariaDB, Sqlite, Postgres
+    #[arg(short, long, env = "DATABASE_URL")]
+    pub database_url: Url,
+
+    /// Query permissions
+    #[command(flatten)]
+    pub permissions: Permissions,
 
     /// SSH tunnel configuration
     #[command(flatten)]

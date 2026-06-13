@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tracing::error;
 
-use crate::{cli::Operation, db::DatabasePool};
+use crate::{
+    cli::Permissions,
+    db::{DatabasePool, OperationInfo},
+};
 
 #[derive(Deserialize, JsonSchema)]
 struct Input {
@@ -20,12 +23,12 @@ struct Response {
 
 pub struct SqlMcpServer {
     pool: DatabasePool,
-    operations: Vec<Operation>,
+    permissions: Permissions,
 }
 
 impl SqlMcpServer {
-    pub fn new(pool: DatabasePool, operations: Vec<Operation>) -> Self {
-        Self { pool, operations }
+    pub fn new(pool: DatabasePool, permissions: Permissions) -> Self {
+        Self { pool, permissions }
     }
 }
 
@@ -43,16 +46,47 @@ impl SqlMcpServer {
             .map_err(|err| ErrorData::new(ErrorCode::PARSE_ERROR, err.to_string(), None))?;
 
         let is_allowed = parsed_operations
-            .into_iter()
-            .all(|o| self.operations.contains(&o));
+            .iter()
+            .all(|o| self.permissions.operations.contains(&o.operation()));
 
         if !is_allowed {
             return Err(ErrorData::new(
                 ErrorCode::INVALID_PARAMS,
-                "Query contains disallowed operations",
+                "Query contains operations disallowed by configured permissions",
                 None,
             ));
         }
+
+        parsed_operations.into_iter().try_for_each(|o| match o {
+            OperationInfo::Select { has_limit }
+                if self.permissions.deny_limitless_select && !has_limit =>
+            {
+                Err(ErrorData::new(
+                    ErrorCode::INVALID_PARAMS,
+                    "Configured permission do not allow SELECT queries without a LIMIT clause",
+                    None,
+                ))
+            }
+            OperationInfo::Update { has_where }
+                if self.permissions.deny_boundless_update && !has_where =>
+            {
+                Err(ErrorData::new(
+                    ErrorCode::INVALID_PARAMS,
+                    "Configured permission do not allow UPDATE queries without a WHERE clause",
+                    None,
+                ))
+            }
+            OperationInfo::Delete { has_where }
+                if self.permissions.deny_boundless_delete && !has_where =>
+            {
+                Err(ErrorData::new(
+                    ErrorCode::INVALID_PARAMS,
+                    "Configured permission do not allow DELETE queries without a WHERE clause",
+                    None,
+                ))
+            }
+            _ => Ok(()),
+        })?;
 
         let output = self
             .pool

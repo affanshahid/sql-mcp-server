@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
     };
 
     let pool = DatabasePool::connect(url).await?;
-    let server = SqlMcpServer::new(pool, args.operations);
+    let server = SqlMcpServer::new(pool, args.permissions);
     let service = server.serve(transport::stdio()).await?;
 
     match handle {
