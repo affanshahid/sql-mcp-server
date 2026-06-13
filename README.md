@@ -6,6 +6,12 @@ Supported databases: MySQL, MariaDB, PostgreSQL, SQLite.
 
 ## Install
 
+**Run Directly**
+
+```sh
+npx -y @affanshahid/sql-mcp-server
+```
+
 **npm**
 
 ```sh
@@ -36,7 +42,8 @@ cargo install sql-mcp-server --locked
 {
   "mcpServers": {
     "sql": {
-      "command": "sql-mcp-server",
+      "command": "npx",
+      "args": ["-y", "@affanshahid/sql-mcp-server"],
       "env": {
         "DATABASE_URL": "postgres://user:pass@host:5432/dbname"
       }
@@ -53,7 +60,8 @@ To reach a database that isn't directly accessible, supply SSH options and the s
 {
   "mcpServers": {
     "sql": {
-      "command": "sql-mcp-server",
+      "command": "npx",
+      "args": ["-y", "@affanshahid/sql-mcp-server"],
       "env": {
         "DATABASE_URL": "postgres://user:pass@db.internal:5432/dbname",
         "SSH_HOST": "bastion.example.com",
@@ -75,7 +83,8 @@ By default only `SELECT` is allowed. Use `DATABASE_OPERATIONS` to permit more:
 {
   "mcpServers": {
     "sql": {
-      "command": "sql-mcp-server",
+      "command": "npx",
+      "args": ["-y", "@affanshahid/sql-mcp-server"],
       "env": {
         "DATABASE_URL": "postgres://user:pass@host:5432/dbname",
         "DATABASE_OPERATIONS": "select,insert,update"
