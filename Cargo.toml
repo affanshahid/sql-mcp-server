@@ -6,6 +6,18 @@ description = "An MCP server for connecting to and running queries on SQL databa
 homepage = "https://github.com/affanshahid/sql-mcp-server#readme"
 repository = "https://github.com/affanshahid/sql-mcp-server"
 license-file = "LICENSE"
+keywords = [
+  "mariadb",
+  "mcp",
+  "mysql",
+  "postgres",
+  "proxy",
+  "server",
+  "sql",
+  "sqlite",
+  "ssh",
+  "tunneling"
+]
 
 [dependencies]
 anyhow = "1.0.102"
