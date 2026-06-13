@@ -3,6 +3,7 @@ name = "sql-mcp-server"
 version = "0.1.0"
 edition = "2024"
 description = "An MCP server for connecting to and running queries on SQL databases. Supports built-in SSH tunneling"
+repository = "https://github.com/affanshahid/sql-mcp-server"
 
 [dependencies]
 anyhow = "1.0.102"
@@ -30,3 +31,7 @@ tokio = {
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 url = "2.5.8"
+
+[profile.dist]
+inherits = "release"
+lto = "thin"
