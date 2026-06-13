@@ -27,7 +27,7 @@ curl --proto '=https' --tlsv1.2 -LsSf https://github.com/affanshahid/sql-mcp-ser
 **PowerShell (Windows)**
 
 ```sh
-powershell -c "irm https://github.com/affanshahid/sql-mcp-server/releases/latest/download/sql-mcp-server-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/affanshahid/sql-mcp-server/releases/latest/download/sql-mcp-server-installer.ps1 | iex"
 ```
 
 **Build From Source**
