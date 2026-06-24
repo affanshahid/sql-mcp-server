@@ -7,6 +7,7 @@ use russh::{
 };
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::task::JoinHandle;
 use tracing::error;
@@ -30,8 +31,11 @@ impl Handler for ClientHandler {
 }
 
 pub async fn create(opts: SshOptions, db_url: Url) -> Result<(JoinHandle<()>, u16)> {
+    let mut config = Config::default();
+    config.keepalive_interval = Some(Duration::from_secs(30));
+
     let mut session = client::connect(
-        Arc::new(Config::default()),
+        Arc::new(config),
         (opts.host.as_ref(), opts.port),
         ClientHandler {
             host: opts.host.clone(),
